@@ -97,9 +97,6 @@ class ProDownloader(QMainWindow):
         self.up_b = QPushButton("🔄 UPDATE ENGINE"); self.up_b.clicked.connect(self.update_lib); self.up_b.setDefault(True); hl.addWidget(self.up_b)
         self.up_b.setAccessibleName("Update Engine Button")
         
-        self.app_up_b = QPushButton("CHECK APP UPDATE"); self.app_up_b.clicked.connect(lambda: self.check_app_updates(manual=True)); self.app_up_b.setDefault(True); hl.addWidget(self.app_up_b)
-        self.app_up_b.setAccessibleName("Check App Update Button")
-        
         # Toggle History Button
         self.hist_b = QPushButton("📋 SHOW HISTORY"); self.hist_b.clicked.connect(self.toggle_history); self.hist_b.setDefault(True); hl.addWidget(self.hist_b)
         self.hist_b.setAccessibleName("Show History Button")
@@ -466,9 +463,6 @@ class ProDownloader(QMainWindow):
         if hasattr(self, 'up_b') and self.up_b:
             self.up_b.setText(self.translate("update_engine"))
             self.up_b.setAccessibleName(self.translate("acc_update_btn"))
-        if hasattr(self, 'app_up_b') and self.app_up_b:
-            self.app_up_b.setText(self.translate("update_app_btn"))
-            self.app_up_b.setAccessibleName(self.translate("acc_update_app_btn"))
         if hasattr(self, 'hist_b') and self.hist_b:
             visible = self.table.isVisible()
             self.hist_b.setText(self.translate("hide_history") if visible else self.translate("show_history"))
@@ -909,21 +903,24 @@ class ProDownloader(QMainWindow):
         else:
             QMessageBox.warning(self, "ERROR", f"Failed to update engine:\n{message}")
 
-    def check_app_updates(self, manual=False):
+    def check_app_updates(self, manual=False, settings_dlg=None):
         if hasattr(self, 'worker_app_up') and self.worker_app_up and self.worker_app_up.isRunning():
             return
         
-        if manual:
-            self.app_up_b.setEnabled(False)
-            
+        self.current_settings_dlg = settings_dlg
         self.worker_app_up = AppUpdateCheckWorker()
         self.worker_app_up.finished.connect(lambda *args: self.worker_app_up.deleteLater())
         self.worker_app_up.finished.connect(lambda success, tag_name, download_url, body: self.check_app_updates_done(success, tag_name, download_url, body, manual))
         self.worker_app_up.start()
 
     def check_app_updates_done(self, success, tag_name, download_url, body, manual):
-        if hasattr(self, 'app_up_b') and self.app_up_b:
-            self.app_up_b.setEnabled(True)
+        if hasattr(self, 'current_settings_dlg') and self.current_settings_dlg:
+            try:
+                self.current_settings_dlg.btn_app_update.setEnabled(True)
+                self.current_settings_dlg.btn_app_update.setText(self.current_settings_dlg.translate("update_app_btn"))
+            except:
+                pass
+            self.current_settings_dlg = None
             
         if success:
             current_version = "v1.0"

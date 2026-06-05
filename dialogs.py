@@ -160,6 +160,12 @@ class SettingsDialog(QDialog):
         self.populate_proxy_list()
         self.toggle_proxy_input(proxy_enabled)
         
+        # Check App Update Button in settings
+        self.btn_app_update = QPushButton()
+        self.btn_app_update.clicked.connect(self.check_app_updates)
+        self.btn_app_update.setAccessibleName("Check Application Update Button")
+        l.addWidget(self.btn_app_update)
+        
         bl = QHBoxLayout()
         self.sb = QPushButton()
         self.sb.clicked.connect(self.accept)
@@ -232,7 +238,15 @@ class SettingsDialog(QDialog):
         self.btn_del_proxy.setAccessibleName(self.translate("acc_btn_del_proxy"))
         self.btn_activate_proxy.setAccessibleName(self.translate("acc_btn_activate_proxy"))
         self.sb.setAccessibleName(self.translate("acc_sb"))
+        self.btn_app_update.setText(self.translate("update_app_btn"))
+        self.btn_app_update.setAccessibleName(self.translate("acc_update_app_btn"))
         
+    def check_app_updates(self):
+        self.btn_app_update.setEnabled(False)
+        self.btn_app_update.setText(self.translate("checking_updates"))
+        if self.parent():
+            self.parent().check_app_updates(manual=True, settings_dlg=self)
+            
     def get_language(self):
         return self.lang_combo.currentData()
         

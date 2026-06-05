@@ -5,7 +5,7 @@
 AppId={{D8F9A6C2-3B47-4921-99A1-A1E4FF4B8C1D}
 AppName=IDM Ultimate Pro
 AppVersion=1.0
-AppPublisher=Jaber0the0great
+AppPublisher=Jaber mohamed
 AppPublisherURL=https://github.com/Jaber0the0great/idm-ultimate-pro
 AppSupportURL=https://github.com/Jaber0the0great/idm-ultimate-pro/issues
 AppUpdatesURL=https://github.com/Jaber0the0great/idm-ultimate-pro/releases
@@ -16,19 +16,25 @@ OutputBaseFilename=IDM_Ultimate_Pro_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-; If you have an icon.ico, uncomment the line below and make sure it is in the same directory:
-; SetupIconFile=icon.ico
+SetupIconFile=icon.ico
+ShowLanguageDialog=yes
+VersionInfoVersion=1.0.0.0
+VersionInfoCompany=Jaber mohamed
+VersionInfoDescription=IDM Ultimate Pro Installer
+VersionInfoTextVersion=1.0
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "arabic"; MessagesFile: "compiler:Languages\Arabic.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+
 
 [Files]
-Source: "dist\IDM_Ultimate_Pro.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\IDM_Ultimate_Pro\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
+
 
 [Icons]
 Name: "{autoprograms}\IDM Ultimate Pro"; Filename: "{app}\IDM_Ultimate_Pro.exe"

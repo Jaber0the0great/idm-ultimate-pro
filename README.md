@@ -68,11 +68,20 @@ To compile this project into a standalone executable:
    ```
 
 2. **Generate the executable**:
-   Run the following command in your terminal:
-   ```bash
-   pyinstaller --noconsole --onefile --name="IDM_Ultimate_Pro" --clean main.py
-   ```
-   This will generate a portable `IDM_Ultimate_Pro.exe` file in the `dist/` directory.
+   - **For Portable Version (Single EXE):**
+     Run the following command:
+     ```bash
+     pyinstaller --noconsole --onefile --name="IDM_Ultimate_Pro" --icon="icon.ico" --clean main.py
+     ```
+     This generates a single `IDM_Ultimate_Pro.exe` file under the `dist/` directory.
+
+   - **For Installer Version (Recommended for Setup file size reduction):**
+     Run the following command:
+     ```bash
+     pyinstaller --noconsole --onedir --name="IDM_Ultimate_Pro" --icon="icon.ico" --clean main.py
+     ```
+     This generates a directory `dist/IDM_Ultimate_Pro/` containing the executable and its loose DLL dependencies, which is optimal for Inno Setup packaging.
+
 
 ## How the Translations System Works
 
