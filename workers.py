@@ -690,3 +690,33 @@ class FormatFetcher(QThread):
                 self.formats_fetched.emit(sorted_res, sorted_audio)
         except Exception as e:
             self.error_occurred.emit(str(e))
+
+class AppUpdateCheckWorker(QThread):
+    # Emit (success, latest_version_tag, download_url, release_notes_or_error)
+    finished = pyqtSignal(bool, str, str, str)
+
+    def run(self):
+        try:
+            import urllib.request
+            import json
+            req = urllib.request.Request(
+                "https://api.github.com/repos/Jaber0the0great/idm-ultimate-pro/releases/latest",
+                headers={"User-Agent": "IDM-Ultimate-Pro-UpdateChecker"}
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                tag_name = data.get("tag_name", "") # e.g. "v1.1" or "1.1"
+                html_url = data.get("html_url", "")
+                body = data.get("body", "") # Release notes
+                # Find download url of the asset (.exe or setup.exe)
+                download_url = html_url # Default fallback to release page
+                assets = data.get("assets", [])
+                for asset in assets:
+                    name = asset.get("name", "").lower()
+                    if name.endswith(".exe"):
+                        download_url = asset.get("browser_download_url", html_url)
+                        break
+                self.finished.emit(True, tag_name, download_url, body)
+        except Exception as e:
+            self.finished.emit(False, "", "", str(e))
+

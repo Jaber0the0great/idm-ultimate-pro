@@ -278,6 +278,12 @@ def ensure_translations():
             "settings_set_active": "SET ACTIVE",
             "settings_save": "SAVE",
             "settings_lang": "LANGUAGE / اللغة:",
+            "update_app_btn": "Check App Update",
+            "checking_updates": "Checking for updates...",
+            "up_to_date": "Application is up to date!",
+            "update_available_title": "New Update Available",
+            "update_available_msg": "A new version ({}) of IDM Ultimate Pro is available.\nWould you like to open the download page?",
+            
             
             "settings_close_behavior_lbl": "ON WINDOW CLOSE:",
             "settings_close_behavior_prompt": "Always Ask Me",
@@ -350,7 +356,8 @@ def ensure_translations():
             "acc_btn_edit_proxy": "Edit Selected Proxy Button",
             "acc_btn_del_proxy": "Delete Selected Proxy Button",
             "acc_btn_activate_proxy": "Set Selected Proxy Active Button",
-            "acc_sb": "Save Settings Button"
+            "acc_sb": "Save Settings Button",
+            "acc_update_app_btn": "Check Application Update Button"
         },
         "ar": {
             "title": "IDM ULTIMATE PRO v1.0",
@@ -422,6 +429,12 @@ def ensure_translations():
             "settings_set_active": "تفعيل",
             "settings_save": "حفظ الإعدادات",
             "settings_lang": "اللغة / Language:",
+            "update_app_btn": "التحقق من تحديث التطبيق",
+            "checking_updates": "جاري التحقق من التحديثات...",
+            "up_to_date": "التطبيق محدث إلى آخر إصدار!",
+            "update_available_title": "تحديث جديد متاح",
+            "update_available_msg": "إصدار جديد متاح ({}) من برنامج IDM Ultimate Pro.\nهل تريد فتح صفحة التحميل؟",
+            
             
             "settings_close_behavior_lbl": "عند إغلاق النافذة:",
             "settings_close_behavior_prompt": "اسألني دائماً",
@@ -494,7 +507,8 @@ def ensure_translations():
             "acc_btn_edit_proxy": "زر تعديل البروكسي المحدد",
             "acc_btn_del_proxy": "زر حذف البروكسي المحدد",
             "acc_btn_activate_proxy": "زر تفعيل البروكسي المحدد",
-            "acc_sb": "زر حفظ الإعدادات"
+            "acc_sb": "زر حفظ الإعدادات",
+            "acc_update_app_btn": "زر التحقق من تحديث التطبيق"
         }
     }
     

@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QTimer, QEvent
 from config import load_config, save_config, APP_NAME, load_history, save_history, delete_history_task, load_translations
-from workers import UpdateWorker, UniversalWorker, FormatFetcher
+from workers import UpdateWorker, UniversalWorker, FormatFetcher, AppUpdateCheckWorker
 from dialogs import SettingsDialog, TaskInfoDialog
 
 class AccessibleTableWidget(QTableWidget):
@@ -75,6 +75,9 @@ class ProDownloader(QMainWindow):
         self.shimmer_timer.start()
         
         self.update_style(0); self.tabs.currentChanged.connect(self.update_style)
+        
+        # Check for app updates automatically on startup after 3 seconds
+        QTimer.singleShot(3000, lambda: self.check_app_updates(manual=False))
 
     def update_save_dir(self, p):
         self.save_dir = os.path.join(p, APP_NAME)
@@ -93,6 +96,9 @@ class ProDownloader(QMainWindow):
         
         self.up_b = QPushButton("🔄 UPDATE ENGINE"); self.up_b.clicked.connect(self.update_lib); self.up_b.setDefault(True); hl.addWidget(self.up_b)
         self.up_b.setAccessibleName("Update Engine Button")
+        
+        self.app_up_b = QPushButton("CHECK APP UPDATE"); self.app_up_b.clicked.connect(lambda: self.check_app_updates(manual=True)); self.app_up_b.setDefault(True); hl.addWidget(self.app_up_b)
+        self.app_up_b.setAccessibleName("Check App Update Button")
         
         # Toggle History Button
         self.hist_b = QPushButton("📋 SHOW HISTORY"); self.hist_b.clicked.connect(self.toggle_history); self.hist_b.setDefault(True); hl.addWidget(self.hist_b)
@@ -460,6 +466,9 @@ class ProDownloader(QMainWindow):
         if hasattr(self, 'up_b') and self.up_b:
             self.up_b.setText(self.translate("update_engine"))
             self.up_b.setAccessibleName(self.translate("acc_update_btn"))
+        if hasattr(self, 'app_up_b') and self.app_up_b:
+            self.app_up_b.setText(self.translate("update_app_btn"))
+            self.app_up_b.setAccessibleName(self.translate("acc_update_app_btn"))
         if hasattr(self, 'hist_b') and self.hist_b:
             visible = self.table.isVisible()
             self.hist_b.setText(self.translate("hide_history") if visible else self.translate("show_history"))
@@ -899,6 +908,50 @@ class ProDownloader(QMainWindow):
             QMessageBox.information(self, "INFO", message)
         else:
             QMessageBox.warning(self, "ERROR", f"Failed to update engine:\n{message}")
+
+    def check_app_updates(self, manual=False):
+        if hasattr(self, 'worker_app_up') and self.worker_app_up and self.worker_app_up.isRunning():
+            return
+        
+        if manual:
+            self.app_up_b.setEnabled(False)
+            
+        self.worker_app_up = AppUpdateCheckWorker()
+        self.worker_app_up.finished.connect(lambda *args: self.worker_app_up.deleteLater())
+        self.worker_app_up.finished.connect(lambda success, tag_name, download_url, body: self.check_app_updates_done(success, tag_name, download_url, body, manual))
+        self.worker_app_up.start()
+
+    def check_app_updates_done(self, success, tag_name, download_url, body, manual):
+        if hasattr(self, 'app_up_b') and self.app_up_b:
+            self.app_up_b.setEnabled(True)
+            
+        if success:
+            current_version = "v1.0"
+            latest_version = tag_name.strip()
+            
+            if latest_version and latest_version.lower() != current_version.lower():
+                msg_box = QMessageBox(self)
+                msg_box.setWindowTitle(self.translate("update_available_title"))
+                msg_box.setText(self.translate("update_available_msg").format(latest_version))
+                if body:
+                    msg_box.setInformativeText(body)
+                msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
+                
+                yes_btn = msg_box.button(QMessageBox.StandardButton.Yes)
+                yes_btn.setText(self.translate("btn_ok") if self.lang == "ar" else "Yes")
+                no_btn = msg_box.button(QMessageBox.StandardButton.No)
+                no_btn.setText(self.translate("btn_cancel_action") if self.lang == "ar" else "No")
+                
+                if msg_box.exec() == QMessageBox.StandardButton.Yes:
+                    import webbrowser
+                    webbrowser.open(download_url)
+            else:
+                if manual:
+                    QMessageBox.information(self, "INFO", self.translate("up_to_date"))
+        else:
+            if manual:
+                QMessageBox.warning(self, "ERROR", f"Failed to check for updates:\n{body}")
 
     def start(self):
         idx = self.tabs.currentIndex()
