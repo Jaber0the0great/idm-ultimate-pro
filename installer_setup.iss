@@ -4,7 +4,7 @@
 [Setup]
 AppId={{D8F9A6C2-3B47-4921-99A1-A1E4FF4B8C1D}
 AppName=IDM Ultimate Pro
-AppVersion=1.0
+AppVersion=1.2
 AppPublisher=Jaber mohamed
 AppPublisherURL=https://github.com/Jaber0the0great/idm-ultimate-pro
 AppSupportURL=https://github.com/Jaber0the0great/idm-ultimate-pro/issues
@@ -18,10 +18,11 @@ SolidCompression=yes
 WizardStyle=modern
 SetupIconFile=icon.ico
 ShowLanguageDialog=yes
-VersionInfoVersion=1.0.0.0
+VersionInfoVersion=1.2.0.0
 VersionInfoCompany=Jaber mohamed
 VersionInfoDescription=IDM Ultimate Pro Installer
-VersionInfoTextVersion=1.0
+VersionInfoTextVersion=1.2
+
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

@@ -705,18 +705,90 @@ class AppUpdateCheckWorker(QThread):
             )
             with urllib.request.urlopen(req, timeout=10) as response:
                 data = json.loads(response.read().decode('utf-8'))
-                tag_name = data.get("tag_name", "") # e.g. "v1.1" or "1.1"
-                html_url = data.get("html_url", "")
-                body = data.get("body", "") # Release notes
+                tag_name = str(data.get("tag_name") or "") # e.g. "v1.1" or "1.1"
+                html_url = str(data.get("html_url") or "")
+                body = str(data.get("body") or "") # Release notes
                 # Find download url of the asset (.exe or setup.exe)
                 download_url = html_url # Default fallback to release page
                 assets = data.get("assets", [])
                 for asset in assets:
-                    name = asset.get("name", "").lower()
+                    name = str(asset.get("name") or "").lower()
                     if name.endswith(".exe"):
-                        download_url = asset.get("browser_download_url", html_url)
+                        download_url = str(asset.get("browser_download_url") or html_url)
                         break
                 self.finished.emit(True, tag_name, download_url, body)
         except Exception as e:
             self.finished.emit(False, "", "", str(e))
+
+class AppUpdateDownloaderWorker(QThread):
+    # Emit (progress_percentage, bytes_downloaded, total_bytes)
+    progress = pyqtSignal(int, int, int)
+    # Emit (success, file_path_or_error_msg)
+    finished = pyqtSignal(bool, str)
+
+    def __init__(self, download_url, save_path):
+        super().__init__()
+        self.download_url = download_url
+        self.save_path = save_path
+        self._is_cancelled = False
+
+    def run(self):
+        import urllib.request
+        import time
+        
+        max_retries = 5
+        retry_delay = 3 # seconds
+        downloaded = 0
+        total_size = 0
+        
+        headers = {"User-Agent": "IDM-Ultimate-Pro-Updater"}
+        
+        for attempt in range(max_retries):
+            if self._is_cancelled:
+                self.finished.emit(False, "Cancelled")
+                return
+                
+            try:
+                req = urllib.request.Request(self.download_url, headers=headers)
+                
+                # Resumable range request if file partially exists
+                if downloaded > 0:
+                    req.add_header("Range", f"bytes={downloaded}-")
+                    mode = "ab"
+                else:
+                    mode = "wb"
+                    
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    cl = response.headers.get('content-length')
+                    if cl:
+                        if downloaded > 0:
+                            total_size = downloaded + int(cl)
+                        else:
+                            total_size = int(cl)
+                    
+                    with open(self.save_path, mode) as f:
+                        while not self._is_cancelled:
+                            chunk = response.read(1024 * 64)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            
+                            percent = 0
+                            if total_size > 0:
+                                percent = int((downloaded / total_size) * 100)
+                            self.progress.emit(percent, downloaded, total_size)
+                            
+                    if not self._is_cancelled:
+                        self.finished.emit(True, self.save_path)
+                        return
+                        
+            except Exception as e:
+                # If we still have retries remaining, wait and retry
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                else:
+                    self.finished.emit(False, str(e))
+                    return
+
 

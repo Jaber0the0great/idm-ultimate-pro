@@ -1,4 +1,5 @@
-# IDM Ultimate Pro (v1.0)
+# IDM Ultimate Pro (v1.2)
+
 
 A modern, high-performance, and fully accessible download manager built with Python and PyQt6. This application is optimized for speed, reliability, and screen readers (such as NVDA and JAWS), providing a seamless downloading experience for all users.
 

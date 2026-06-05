@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QTimer, QEvent
 from config import load_config, save_config, APP_NAME, load_history, save_history, delete_history_task, load_translations
-from workers import UpdateWorker, UniversalWorker, FormatFetcher, AppUpdateCheckWorker
-from dialogs import SettingsDialog, TaskInfoDialog
+from workers import UpdateWorker, UniversalWorker, FormatFetcher, AppUpdateCheckWorker, AppUpdateDownloaderWorker
+from dialogs import SettingsDialog, TaskInfoDialog, UpdateProgressDialog
 
 class AccessibleTableWidget(QTableWidget):
     def keyPressEvent(self, event):
@@ -29,7 +29,7 @@ class ProDownloader(QMainWindow):
         self.config = load_config()
         self.translations = load_translations()
         self.lang = self.config.get("language", "en")
-        self.setWindowTitle("IDM ULTIMATE PRO v1.0")
+        self.setWindowTitle("IDM ULTIMATE PRO v1.2")
         self.setMinimumSize(1050, 780)
         self.update_save_dir(self.config.get("save_dir"))
         self.last_clipboard_url = ""
@@ -923,7 +923,7 @@ class ProDownloader(QMainWindow):
             self.current_settings_dlg = None
             
         if success:
-            current_version = "v1.0"
+            current_version = "v1.2"
             latest_version = tag_name.strip()
             
             if latest_version and latest_version.lower() != current_version.lower():
@@ -941,14 +941,55 @@ class ProDownloader(QMainWindow):
                 no_btn.setText(self.translate("btn_cancel_action") if self.lang == "ar" else "No")
                 
                 if msg_box.exec() == QMessageBox.StandardButton.Yes:
-                    import webbrowser
-                    webbrowser.open(download_url)
+                    self.start_app_update_download(download_url)
             else:
                 if manual:
                     QMessageBox.information(self, "INFO", self.translate("up_to_date"))
         else:
             if manual:
                 QMessageBox.warning(self, "ERROR", f"Failed to check for updates:\n{body}")
+
+    def start_app_update_download(self, download_url):
+        from config import CONFIG_DIR
+        updates_dir = os.path.join(CONFIG_DIR, "updates")
+        os.makedirs(updates_dir, exist_ok=True)
+        save_path = os.path.join(updates_dir, "IDM_Ultimate_Pro_Setup.exe")
+        
+        self.update_dlg = UpdateProgressDialog(self, translations=self.translations, lang=self.lang)
+        self.update_dl_worker = AppUpdateDownloaderWorker(download_url, save_path)
+        self.update_dl_worker.progress.connect(self.update_dlg.update_progress)
+        self.update_dl_worker.finished.connect(self.app_update_download_done)
+        
+        # Safe cancel handler
+        self.update_dlg.rejected.connect(lambda: (
+            setattr(self.update_dl_worker, '_is_cancelled', True),
+            self.update_dl_worker.wait(),
+            self.update_dl_worker.deleteLater()
+        ))
+        
+        self.update_dl_worker.start()
+        self.update_dlg.exec()
+
+    def app_update_download_done(self, success, path_or_error):
+        if hasattr(self, 'update_dlg') and self.update_dlg:
+            self.update_dlg.accept()
+            self.update_dlg = None
+            
+        if success:
+            try:
+                import subprocess
+                # Run Inno Setup installer silently
+                # /VERYSILENT runs installer without wizard UI
+                # /SUPPRESSMSGBOXES suppresses dialogs
+                # /NORESTART keeps OS running
+                subprocess.Popen([path_or_error, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'])
+                QApplication.quit()
+                sys.exit(0)
+            except Exception as e:
+                QMessageBox.warning(self, "ERROR", f"Failed to launch installer:\n{str(e)}")
+        else:
+            if path_or_error != "Cancelled":
+                QMessageBox.warning(self, "ERROR", f"Failed to download update:\n{path_or_error}")
 
     def start(self):
         idx = self.tabs.currentIndex()

@@ -1,13 +1,14 @@
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, 
     QFileDialog, QCheckBox, QSpinBox, QComboBox, QListWidget, QListWidgetItem, 
-    QInputDialog, QMenu, QGridLayout, QFrame, QTextEdit
+    QInputDialog, QMenu, QGridLayout, QFrame, QTextEdit, QProgressBar
 )
 from PyQt6.QtCore import Qt
 
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, current_path="", current_limit=0, queue_enabled=False, max_concurrent=1, max_connections=8, proxy_enabled=False, proxy_list=None, active_proxy="", current_lang="en", translations=None, close_behavior=None):
         super().__init__(parent)
+        self.main_window = parent
         self.current_lang = current_lang
         self.translations = translations or {}
         
@@ -244,8 +245,8 @@ class SettingsDialog(QDialog):
     def check_app_updates(self):
         self.btn_app_update.setEnabled(False)
         self.btn_app_update.setText(self.translate("checking_updates"))
-        if self.parent():
-            self.parent().check_app_updates(manual=True, settings_dlg=self)
+        if self.main_window:
+            self.main_window.check_app_updates(manual=True, settings_dlg=self)
             
     def get_language(self):
         return self.lang_combo.currentData()
@@ -565,3 +566,48 @@ class TaskInfoDialog(QDialog):
         else:
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.warning(self, self.translate("Error"), "Download folder does not exist yet!")
+
+class UpdateProgressDialog(QDialog):
+    def __init__(self, parent=None, translations=None, lang="en"):
+        super().__init__(parent)
+        self.translations = translations or {}
+        self.lang = lang
+        self.setWindowTitle(self.translate("updating_app_title", "Updating Application"))
+        self.setFixedSize(450, 180)
+        self.setStyleSheet(
+            "QDialog { background: #0d0e12; color: #fff; }"
+            "QLabel { color: #fff; font-weight: bold; font-size: 13px; }"
+            "QProgressBar { background: #161922; border: 1px solid #2e3440; border-radius: 7px; height: 16px; text-align: center; color: #fff; }"
+            "QProgressBar::chunk { background: #00d8ff; border-radius: 7px; }"
+            "QPushButton { background: #1a1d26; color: #fff; border: 1px solid #2e3440; font-weight: bold; padding: 8px 16px; border-radius: 6px; }"
+            "QPushButton:hover { background: #2b303c; }"
+        )
+        l = QVBoxLayout(self)
+        l.setContentsMargins(20, 20, 20, 20)
+        l.setSpacing(15)
+        
+        self.status_lbl = QLabel(self.translate("downloading_update", "Downloading update..."))
+        l.addWidget(self.status_lbl)
+        
+        self.bar = QProgressBar()
+        self.bar.setRange(0, 100)
+        self.bar.setValue(0)
+        l.addWidget(self.bar)
+        
+        self.details_lbl = QLabel("0.00 MB / 0.00 MB")
+        self.details_lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
+        l.addWidget(self.details_lbl)
+        
+        self.cancelled = False
+        
+    def translate(self, key, default):
+        return self.translations.get(self.lang, {}).get(key, default)
+        
+    def update_progress(self, percent, downloaded, total):
+        self.bar.setValue(percent)
+        self.details_lbl.setText(f"{downloaded/1e6:.2f} MB / {total/1e6:.2f} MB")
+        
+    def reject(self):
+        self.cancelled = True
+        super().reject()
+

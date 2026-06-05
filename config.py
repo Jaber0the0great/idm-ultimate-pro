@@ -209,7 +209,7 @@ def ensure_translations():
     
     default_translations = {
         "en": {
-            "title": "IDM ULTIMATE PRO v1.0",
+            "title": "IDM ULTIMATE PRO v1.2",
             "subtitle": "STANDALONE ELITE ENGINE (NO FFMPEG)",
             "settings": "SETTINGS",
             "update_engine": "UPDATE ENGINE",
@@ -281,8 +281,9 @@ def ensure_translations():
             "update_app_btn": "Check App Update",
             "checking_updates": "Checking for updates...",
             "up_to_date": "Application is up to date!",
-            "update_available_title": "New Update Available",
-            "update_available_msg": "A new version ({}) of IDM Ultimate Pro is available.\nWould you like to open the download page?",
+            "update_available_msg": "A new version ({}) of IDM Ultimate Pro is available.\nWould you like to download and install it now?",
+            "updating_app_title": "Updating Application",
+            "downloading_update": "Downloading update...",
             
             
             "settings_close_behavior_lbl": "ON WINDOW CLOSE:",
@@ -360,7 +361,7 @@ def ensure_translations():
             "acc_update_app_btn": "Check Application Update Button"
         },
         "ar": {
-            "title": "IDM ULTIMATE PRO v1.0",
+            "title": "IDM ULTIMATE PRO v1.2",
             "subtitle": "محرك النخبة المستقل (بدون FFMPEG)",
             "settings": "الإعدادات",
             "update_engine": "تحديث المحرك",
@@ -432,8 +433,9 @@ def ensure_translations():
             "update_app_btn": "التحقق من تحديث التطبيق",
             "checking_updates": "جاري التحقق من التحديثات...",
             "up_to_date": "التطبيق محدث إلى آخر إصدار!",
-            "update_available_title": "تحديث جديد متاح",
-            "update_available_msg": "إصدار جديد متاح ({}) من برنامج IDM Ultimate Pro.\nهل تريد فتح صفحة التحميل؟",
+            "update_available_msg": "إصدار جديد متاح ({}) من برنامج IDM Ultimate Pro.\nهل تريد تحميل وتثبيت التحديث الآن؟",
+            "updating_app_title": "تحديث التطبيق",
+            "downloading_update": "جاري تحميل التحديث...",
             
             
             "settings_close_behavior_lbl": "عند إغلاق النافذة:",
