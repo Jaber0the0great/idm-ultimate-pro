@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS databases and temp files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# SQLite History & Config files (Local databases)
+history.db
+config.json
+translations.json
+*.db
+
+# PyInstaller Build/Dist directories (Created during compilation)
+build/
+dist/
+*.spec
+IDM_Ultimate_Pro.spec
+
+# Local virtual environments
+venv/
+.venv/
+env/
