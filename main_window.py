@@ -29,7 +29,7 @@ class ProDownloader(QMainWindow):
         self.config = load_config()
         self.translations = load_translations()
         self.lang = self.config.get("language", "en")
-        self.setWindowTitle("IDM ULTIMATE PRO v1.2")
+        self.setWindowTitle("IDM ULTIMATE PRO v1.3")
         self.setMinimumSize(1050, 780)
         self.update_save_dir(self.config.get("save_dir"))
         self.last_clipboard_url = ""
@@ -909,11 +909,15 @@ class ProDownloader(QMainWindow):
         
         self.current_settings_dlg = settings_dlg
         self.worker_app_up = AppUpdateCheckWorker()
-        self.worker_app_up.finished.connect(lambda *args: self.worker_app_up.deleteLater())
-        self.worker_app_up.finished.connect(lambda success, tag_name, download_url, body: self.check_app_updates_done(success, tag_name, download_url, body, manual))
+        self.worker_app_up.finished.connect(lambda *args: self.worker_app_up.deleteLater(), type=Qt.ConnectionType.QueuedConnection)
+        self.worker_app_up.finished.connect(lambda success, tag_name, download_url, body: self.check_app_updates_done(success, tag_name, download_url, body, manual), type=Qt.ConnectionType.QueuedConnection)
         self.worker_app_up.start()
 
     def check_app_updates_done(self, success, tag_name, download_url, body, manual):
+        parent_widget = self
+        if hasattr(self, 'current_settings_dlg') and self.current_settings_dlg:
+            parent_widget = self.current_settings_dlg
+
         if hasattr(self, 'current_settings_dlg') and self.current_settings_dlg:
             try:
                 self.current_settings_dlg.btn_app_update.setEnabled(True)
@@ -923,15 +927,15 @@ class ProDownloader(QMainWindow):
             self.current_settings_dlg = None
             
         if success:
-            current_version = "v1.2"
-            latest_version = tag_name.strip()
+            current_version = "v1.3"
+            latest_version = str(tag_name).strip()
             
             if latest_version and latest_version.lower() != current_version.lower():
-                msg_box = QMessageBox(self)
+                msg_box = QMessageBox(parent_widget)
                 msg_box.setWindowTitle(self.translate("update_available_title"))
                 msg_box.setText(self.translate("update_available_msg").format(latest_version))
                 if body:
-                    msg_box.setInformativeText(body)
+                    msg_box.setInformativeText(str(body))
                 msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
                 msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
                 
@@ -944,10 +948,10 @@ class ProDownloader(QMainWindow):
                     self.start_app_update_download(download_url)
             else:
                 if manual:
-                    QMessageBox.information(self, "INFO", self.translate("up_to_date"))
+                    QMessageBox.information(parent_widget, "INFO", self.translate("up_to_date"))
         else:
             if manual:
-                QMessageBox.warning(self, "ERROR", f"Failed to check for updates:\n{body}")
+                QMessageBox.warning(parent_widget, "ERROR", f"Failed to check for updates:\n{body}")
 
     def start_app_update_download(self, download_url):
         from config import CONFIG_DIR
@@ -957,8 +961,8 @@ class ProDownloader(QMainWindow):
         
         self.update_dlg = UpdateProgressDialog(self, translations=self.translations, lang=self.lang)
         self.update_dl_worker = AppUpdateDownloaderWorker(download_url, save_path)
-        self.update_dl_worker.progress.connect(self.update_dlg.update_progress)
-        self.update_dl_worker.finished.connect(self.app_update_download_done)
+        self.update_dl_worker.progress.connect(self.update_dlg.update_progress, type=Qt.ConnectionType.QueuedConnection)
+        self.update_dl_worker.finished.connect(self.app_update_download_done, type=Qt.ConnectionType.QueuedConnection)
         
         # Safe cancel handler
         self.update_dlg.rejected.connect(lambda: (
@@ -1545,7 +1549,7 @@ class ProDownloader(QMainWindow):
                     if w.isRunning():
                         active_tasks_exist = True
                         w.cancel()
-                        w.wait(1500)
+                        w.wait(100)
                         w.finalize_active_time()
                         task["duration"] = task.get("duration", 0) + int(w.total_active_time)
                 except RuntimeError:

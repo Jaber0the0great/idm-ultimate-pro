@@ -209,7 +209,7 @@ def ensure_translations():
     
     default_translations = {
         "en": {
-            "title": "IDM ULTIMATE PRO v1.2",
+            "title": "IDM ULTIMATE PRO v1.3",
             "subtitle": "STANDALONE ELITE ENGINE (NO FFMPEG)",
             "settings": "SETTINGS",
             "update_engine": "UPDATE ENGINE",
@@ -361,7 +361,7 @@ def ensure_translations():
             "acc_update_app_btn": "Check Application Update Button"
         },
         "ar": {
-            "title": "IDM ULTIMATE PRO v1.2",
+            "title": "IDM ULTIMATE PRO v1.3",
             "subtitle": "محرك النخبة المستقل (بدون FFMPEG)",
             "settings": "الإعدادات",
             "update_engine": "تحديث المحرك",
